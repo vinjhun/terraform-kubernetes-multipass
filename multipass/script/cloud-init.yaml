@@ -1,7 +1,17 @@
 #cloud-config
 bootcmd:
-- "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -"
-- "curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -"
+- printf "[Resolve]\nDNS=8.8.8.8" > /etc/systemd/resolved.conf
+- [systemctl, restart, systemd-resolved]
+- sleep 10
+- curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+- echo "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+- sleep 10
+- curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+- echo "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+- curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+- echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+- chmod a+r /etc/apt/keyrings/docker.gpg
+- chmod a+r /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 users:
   - name: root
     ssh_authorized_keys:
@@ -13,27 +23,20 @@ manage_etc_hosts: localhost
 locale: "en_US.UTF-8"
 package_update: true
 package_upgrade: true
-package_reboot_if_required: true
-apt_update: true
-apt_upgrade: true
-apt:
-  sources:
-      docker:
-          keyid: "9DC858229FC7DD38854AE2D88D81803C0EBFCD88"
-          source: "deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable"
-      kubernetes:
-          keyid: "54A647F9048D5688D7DA2ABE6A030B21BA07F4FB"
-          source: "deb http://apt.kubernetes.io/ kubernetes-xenial main"
-packages: 
+# apt_update: true
+# apt_upgrade: true
+packages:
     # if you change kubernetes version...
-    - kubeadm=1.14.1-00
-    - kubelet=1.14.1-00
-    - kubectl=1.14.1-00
+    - kubeadm=${k_version}
+    - kubelet=${k_version}
+    - kubectl=${k_version}
     # ...also use a SUPPORTED docker version for it
-    - docker-ce=18.06.2~ce~3-0~ubuntu
+    - docker-ce
     - apt-transport-https
     - ntp
     - jq
+    - golang-go
+    - make
 write_files:
   - path: /etc/modules
     content: |
@@ -54,15 +57,28 @@ write_files:
       KUBECONFIG=/etc/kubernetes/admin.conf
   - path: /etc/docker/daemon.json
     content: |
-        { 
+        {
         "exec-opts": ["native.cgroupdriver=systemd"],
         "log-driver": "json-file",
         "log-opts": {
         "max-size": "100m" },
-        "storage-driver": "overlay2" 
+        "storage-driver": "overlay2"
         }
 runcmd:
 - sysctl -p
 - systemctl daemon-reload
 - systemctl restart docker kubelet
-${extra_cmd}
+- export GOPATH=/root/go
+- export GOCACHE=/root/go/cache
+- git clone https://github.com/Mirantis/cri-dockerd.git cri-dockerd
+- cd cri-dockerd
+- make cri-dockerd
+- mkdir -p /usr/local/bin
+- install -o root -g root -m 0755 cri-dockerd /usr/local/bin/cri-dockerd
+- install packaging/systemd/* /etc/systemd/system
+- sed -i -e 's,/usr/bin/cri-dockerd,/usr/local/bin/cri-dockerd,' /etc/systemd/system/cri-docker.service
+- systemctl daemon-reload
+- systemctl enable --now cri-docker.socket
+- ${extra_cmd}
+- echo ${haproxy_ip} > /tmp/haproxy_ip
+- touch /tmp/signal

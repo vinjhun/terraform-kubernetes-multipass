@@ -1,3 +1,3 @@
 module "multipass" {
-    source = "./multipass"
+  source = "./multipass"
 }

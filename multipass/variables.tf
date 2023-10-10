@@ -1,22 +1,24 @@
 variable "disk" {
-    default = "10G"
+  default = "10G"
+  type    = string
 }
-
 variable "mem" {
-    default = "4G"
+  default = "2G"
+  type    = string
 }
-
 variable "cpu" {
-    default = 2
+  default = 2
+  type    = number
 }
-
-variable "master" {
-    default = "kube0"
+variable "masters" {
+  default = 1
+  type    = number
 }
-
 variable "workers" {
-  description = "workers"
-  default = [ "kube1", "kube2", "kube3" ]
+  default = 3
+  type    = number
 }
-
-
+variable "kube_version" {
+  default = "1.28.2-1.1"
+  type    = string
+}

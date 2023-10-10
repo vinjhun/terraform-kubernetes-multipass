@@ -3,6 +3,8 @@ import sys
 import json
 import subprocess
 import tempfile
+import time
+import random
 
 def log(msg):
     with open("multipass.log", "a") as f:
@@ -30,7 +32,8 @@ def create_vm(name, cpu, mem, disk, data):
             "--name", name,
             "--cpus", cpu,
             "--disk", disk,
-            "--mem", mem,
+            "--memory", mem,
+            "--timeout", "600",
             "--cloud-init", temp.name]
     res = subprocess.check_output(cmd)
     log("%s: %s" %(cmd, res))
@@ -45,6 +48,7 @@ cpu = inp["cpu"]
 data = inp["init"]
 res = find_vm(name)
 if not res:
+    time.sleep(random.randrange(1, 10))
     res = create_vm(name, cpu, mem, disk, data)
-    
+
 print(json.dumps(res))
