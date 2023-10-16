@@ -1,7 +1,8 @@
 # terraform-multipass-kubernetes
-Builds a Local Kubernetes cluster the easiest way.
+Build a Local Kubernetes cluster the easiest way.
 
-The cluster is build using [Kubeadm](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/), providing 1 master node and 3 worker nodes.
+The cluster is built using [Kubeadm](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/), providing 1 control-plane node and 3 worker nodes, although you can customize this setup.
 ## Prerequisite:
-* Terraform in MAC M1 - [Guide](https://kreuzwerker.de/en/post/use-m1-terraform-provider-helper-to-compile-terraform-providers-for-mac-m1)
-* [Multipass](https://multipass.run/) - because latest MAC M1 is not supported by VirtualBox, this is the perfect replacement
+* [Terraform](https://developer.hashicorp.com/terraform/downloads?product_intent=terraform)
+* [Multipass](https://multipass.run/)
+* [Kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl)
