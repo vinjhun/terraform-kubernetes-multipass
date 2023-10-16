@@ -1,9 +1,27 @@
-resource "null_resource" "master-dns" {
+resource "null_resource" "haproxy-dns" {
   depends_on = [null_resource.workers-node]
 
-  triggers = {
-    id = data.external.master[count.index].result.ip
+  connection {
+    type        = "ssh"
+    host        = data.external.haproxy.result.ip
+    user        = "root"
+    private_key = file(pathexpand("~/.ssh/id_rsa"))
   }
+
+  provisioner "file" {
+    source      = "/tmp/hosts_ip.txt"
+    destination = "/tmp/hosts_ip.txt"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "cat /tmp/hosts_ip.txt >> /etc/hosts",
+    ]
+  }
+}
+
+resource "null_resource" "master-dns" {
+  depends_on = [null_resource.workers-node]
 
   connection {
     type        = "ssh"
@@ -13,7 +31,7 @@ resource "null_resource" "master-dns" {
   }
 
   provisioner "file" {
-    source      = "hosts_ip.txt"
+    source      = "/tmp/hosts_ip.txt"
     destination = "/tmp/hosts_ip.txt"
   }
 
@@ -27,10 +45,6 @@ resource "null_resource" "master-dns" {
 resource "null_resource" "masters-dns" {
   depends_on = [null_resource.workers-node]
 
-  triggers = {
-    id = data.external.masters[count.index].result.ip
-  }
-
   connection {
     type        = "ssh"
     host        = data.external.masters[count.index].result.ip
@@ -39,7 +53,7 @@ resource "null_resource" "masters-dns" {
   }
 
   provisioner "file" {
-    source      = "hosts_ip.txt"
+    source      = "/tmp/hosts_ip.txt"
     destination = "/tmp/hosts_ip.txt"
   }
 
@@ -53,10 +67,6 @@ resource "null_resource" "masters-dns" {
 resource "null_resource" "workers-dns" {
   depends_on = [null_resource.workers-node]
 
-  triggers = {
-    id = data.external.workers[count.index].result.ip
-  }
-
   connection {
     type        = "ssh"
     host        = data.external.workers[count.index].result.ip
@@ -65,7 +75,7 @@ resource "null_resource" "workers-dns" {
   }
 
   provisioner "file" {
-    source      = "hosts_ip.txt"
+    source      = "/tmp/hosts_ip.txt"
     destination = "/tmp/hosts_ip.txt"
   }
   provisioner "remote-exec" {

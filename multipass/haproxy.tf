@@ -22,4 +22,9 @@ resource "null_resource" "haproxy" {
     ]
   }
 
+  provisioner "local-exec" {
+    command = <<CMD
+echo ${data.external.haproxy.result.ip} haproxy >> /tmp/hosts_ip.txt
+CMD
+  }
 }

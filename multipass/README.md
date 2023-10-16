@@ -33,6 +33,7 @@ module "example" {
 | [local_file.haproxy_final_cfg](https://registry.terraform.io/providers/hashicorp/local/2.4.0/docs/resources/file) | resource |
 | [local_file.haproxy_initial_cfg](https://registry.terraform.io/providers/hashicorp/local/2.4.0/docs/resources/file) | resource |
 | [null_resource.haproxy](https://registry.terraform.io/providers/hashicorp/null/3.2.1/docs/resources/resource) | resource |
+| [null_resource.haproxy-dns](https://registry.terraform.io/providers/hashicorp/null/3.2.1/docs/resources/resource) | resource |
 | [null_resource.haproxy_final](https://registry.terraform.io/providers/hashicorp/null/3.2.1/docs/resources/resource) | resource |
 | [null_resource.kube_config](https://registry.terraform.io/providers/hashicorp/null/3.2.1/docs/resources/resource) | resource |
 | [null_resource.master-dns](https://registry.terraform.io/providers/hashicorp/null/3.2.1/docs/resources/resource) | resource |
@@ -51,16 +52,13 @@ module "example" {
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_cpu"></a> [cpu](#input\_cpu) | n/a | `number` | `2` | no |
-| <a name="input_disk"></a> [disk](#input\_disk) | n/a | `string` | `"10G"` | no |
-| <a name="input_kube_version"></a> [kube\_version](#input\_kube\_version) | n/a | `string` | `"1.28.2-1.1"` | no |
-| <a name="input_masters"></a> [masters](#input\_masters) | n/a | `number` | `1` | no |
-| <a name="input_mem"></a> [mem](#input\_mem) | n/a | `string` | `"2G"` | no |
-| <a name="input_workers"></a> [workers](#input\_workers) | n/a | `number` | `3` | no |
+| <a name="input_cpu"></a> [cpu](#input\_cpu) | Number of CPU assigned to vms | `number` | `2` | no |
+| <a name="input_disk"></a> [disk](#input\_disk) | Disk size assigned to vms | `string` | `"10G"` | no |
+| <a name="input_kube_version"></a> [kube\_version](#input\_kube\_version) | Version of Kubernetes to use | `string` | `"1.28.2-1.1"` | no |
+| <a name="input_masters"></a> [masters](#input\_masters) | Number of control plane nodes | `number` | `1` | no |
+| <a name="input_mem"></a> [mem](#input\_mem) | Memory assigned to vms | `string` | `"2G"` | no |
+| <a name="input_workers"></a> [workers](#input\_workers) | Number of worker nodes | `number` | `3` | no |
 ## Outputs
 
-| Name | Description |
-|------|-------------|
-| <a name="output_master"></a> [master](#output\_master) | n/a |
-| <a name="output_workers"></a> [workers](#output\_workers) | n/a |
+No outputs.
 <!-- END_AUTOMATED_TF_DOCS_BLOCK -->
