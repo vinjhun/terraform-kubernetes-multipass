@@ -35,7 +35,6 @@ packages:
     - apt-transport-https
     - ntp
     - jq
-    - golang-go
     - make
 write_files:
   - path: /etc/modules
@@ -68,8 +67,12 @@ runcmd:
 - sysctl -p
 - systemctl daemon-reload
 - systemctl restart docker kubelet
-- export GOPATH=/root/go
-- export GOCACHE=/root/go/cache
+- wget https://go.dev/dl/go1.21.3.linux-arm64.tar.gz
+- tar -xvf go1.21.3.linux-arm64.tar.gz
+- mv go /usr/local/
+- export GOPATH=/usr/local/go
+- export GOCACHE=$GOPATH/cache
+- export PATH=$GOPATH/bin:$PATH
 - git clone https://github.com/Mirantis/cri-dockerd.git cri-dockerd
 - cd cri-dockerd
 - make cri-dockerd
