@@ -3,14 +3,8 @@ bootcmd:
 - printf "[Resolve]\nDNS=8.8.8.8" > /etc/systemd/resolved.conf
 - [systemctl, restart, systemd-resolved]
 - sleep 10
-- curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-- echo "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-- sleep 10
-- curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-- echo "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-- curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
-- echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
-- chmod a+r /etc/apt/keyrings/docker.gpg
+- curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+- echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
 - chmod a+r /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 users:
   - name: root
@@ -31,7 +25,6 @@ packages:
     - kubelet=${k_version}
     - kubectl=${k_version}
     # ...also use a SUPPORTED docker version for it
-    - docker-ce
     - apt-transport-https
     - ntp
     - jq
@@ -66,22 +59,32 @@ write_files:
 runcmd:
 - sysctl -p
 - systemctl daemon-reload
-- systemctl restart docker kubelet
+- systemctl restart kubelet
+#Go installation
 - wget https://go.dev/dl/go1.21.3.linux-arm64.tar.gz
 - tar -xvf go1.21.3.linux-arm64.tar.gz
 - mv go /usr/local/
 - export GOPATH=/usr/local/go
 - export GOCACHE=$GOPATH/cache
 - export PATH=$GOPATH/bin:$PATH
-- git clone https://github.com/Mirantis/cri-dockerd.git cri-dockerd
-- cd cri-dockerd
-- make cri-dockerd
-- mkdir -p /usr/local/bin
-- install -o root -g root -m 0755 cri-dockerd /usr/local/bin/cri-dockerd
-- install packaging/systemd/* /etc/systemd/system
-- sed -i -e 's,/usr/bin/cri-dockerd,/usr/local/bin/cri-dockerd,' /etc/systemd/system/cri-docker.service
+# ...Containerd installation
+- curl -LO https://github.com/containerd/containerd/releases/download/v1.7.14/containerd-1.7.14-linux-arm64.tar.gz
+- tar Cxzvf /usr/local containerd-1.7.14-linux-arm64.tar.gz
+- curl -LO https://raw.githubusercontent.com/containerd/containerd/main/containerd.service
+- mkdir -p /usr/local/lib/systemd/system/ && mv containerd.service /usr/local/lib/systemd/system/
+- mkdir -p /etc/containerd/
+- containerd config default | tee /etc/containerd/config.toml > /dev/null
+- sed -i 's/SystemdCgroup \= false/SystemdCgroup \= true/g' /etc/containerd/config.toml
 - systemctl daemon-reload
-- systemctl enable --now cri-docker.socket
+- systemctl enable --now containerd
+# ...Runc installation
+- curl -LO https://github.com/opencontainers/runc/releases/download/v1.1.12/runc.arm64
+- install -m 755 runc.arm64 /usr/local/sbin/runc
+# ...CNI installation
+- curl -LO https://github.com/containernetworking/plugins/releases/download/v1.4.1/cni-plugins-linux-arm64-v1.4.1.tgz
+- mkdir -p /opt/cni/bin && tar Cxzvf /opt/cni/bin cni-plugins-linux-arm64-v1.4.1.tgz
+# ...Configure crictl with containerd
+- crictl config runtime-endpoint unix:///var/run/containerd/containerd.sock
 - ${extra_cmd}
 - echo ${haproxy_ip} > /tmp/haproxy_ip
 - touch /tmp/signal
