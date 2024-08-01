@@ -4,7 +4,7 @@ variable "disk" {
   description = "Disk size assigned to vms"
 }
 variable "mem" {
-  default     = "2G"
+  default     = "4G"
   type        = string
   description = "Memory assigned to vms"
 }
@@ -19,7 +19,7 @@ variable "masters" {
   description = "Number of control plane nodes"
 }
 variable "workers" {
-  default     = 3
+  default     = 2
   type        = number
   description = "Number of worker nodes"
 }
