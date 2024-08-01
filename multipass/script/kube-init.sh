@@ -1,8 +1,6 @@
 #!/bin/bash
 echo "*** Waiting for Cloud-Init to finish ***"
 cloud-init status --wait
-echo "*** Kubernetes Pulling Images:"
-kubeadm config images pull --cri-socket unix:///var/run/cri-dockerd.sock
 echo "*** Kubernetes Initializing:"
 export LOCAL_IP=$(hostname -I | awk '{print $1}')
 export HAPROXY_IP=$(cat /tmp/haproxy_ip)
@@ -10,8 +8,7 @@ kubeadm init \
   --upload-certs \
   --pod-network-cidr 10.244.0.0/16 \
   --apiserver-advertise-address $LOCAL_IP \
-  --control-plane-endpoint $HAPROXY_IP:6443 \
-  --cri-socket unix:///var/run/cri-dockerd.sock | tee /tmp/kubeadm.log
+  --control-plane-endpoint $HAPROXY_IP:6443 | tee /tmp/kubeadm.log
 echo "*** Installing Calico:"
 # export K8S_VERSION="$(kubectl version | base64 | tr -d '\n')"
 # export WEAVE_URL="https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml"
