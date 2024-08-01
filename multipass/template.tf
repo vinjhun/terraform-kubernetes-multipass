@@ -20,7 +20,7 @@ resource "local_file" "cloud_init_masters" {
   content = templatefile("${path.module}/script/cloud-init.yaml", {
     k_version      = var.kube_version,
     ssh_public_key = file(pathexpand("~/.ssh/id_rsa.pub")),
-    extra_cmd      = "${data.external.kubejoin-master.result.join} --cri-socket unix:///var/run/cri-dockerd.sock",
+    extra_cmd      = "${data.external.kubejoin-master.result.join}",
     haproxy_ip     = ""
   })
 }
@@ -30,7 +30,7 @@ resource "local_file" "cloud_init_workers" {
   content = templatefile("${path.module}/script/cloud-init.yaml", {
     k_version      = var.kube_version,
     ssh_public_key = file(pathexpand("~/.ssh/id_rsa.pub")),
-    extra_cmd      = "${data.external.kubejoin.result.join} --cri-socket unix:///var/run/cri-dockerd.sock",
+    extra_cmd      = "${data.external.kubejoin.result.join}",
     haproxy_ip     = ""
   })
 }
