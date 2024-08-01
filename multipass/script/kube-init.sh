@@ -13,8 +13,8 @@ echo "*** Installing Calico:"
 # export K8S_VERSION="$(kubectl version | base64 | tr -d '\n')"
 # export WEAVE_URL="https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml"
 # kubectl apply -f "$WEAVE_URL"
-kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.1/manifests/tigera-operator.yaml
-wget  https://raw.githubusercontent.com/projectcalico/calico/v3.26.1/manifests/custom-resources.yaml
+kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.28.1/manifests/tigera-operator.yaml
+wget  https://raw.githubusercontent.com/projectcalico/calico/v3.28.1/manifests/custom-resources.yaml
 sed -i -e 's,cidr: 192.168.0.0/16,cidr: 10.244.0.0/16,' custom-resources.yaml
 kubectl create -f custom-resources.yaml
 echo "*** Waiting for Kubernetes to get ready:"
